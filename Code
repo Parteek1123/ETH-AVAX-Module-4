@@ -1,55 +1,42 @@
 // SPDX-License-Identifier: MIT
-
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.18;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 
-contract DegenToken is ERC20 {
-    // Define the owner of the contract
-    address public owner;
+contract DegenToken is ERC20, Ownable, ERC20Burnable {
 
-    // Define a modifier to restrict functions to the owner
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Only owner can call this function");
-        _;
+    event TokensRedeemed(address indexed redeemer, uint256 amount);
+
+    constructor() ERC20("Degen", "DGN") Ownable(msg.sender) {}
+
+    function mint(address to, uint256 amount) public onlyOwner {
+        _mint(to, amount);
     }
 
-    // Constructor function
-    constructor(
-        string memory tokenName,
-        string memory tokenSymbol,
-        uint256 initialSupply
-    ) ERC20(tokenName, tokenSymbol) {
-        _mint(msg.sender, initialSupply * 10**decimals()); // Mint initial supply with decimals
-        owner = msg.sender;
+    function decimals() public pure override returns (uint8) {
+        return 0;
     }
 
-    // Function to mint new tokens (only owner)
-    function mint(address recipient, uint256 amount) public onlyOwner {
-        _mint(recipient, amount);
+    function getBalance() external view returns (uint256) {
+        return balanceOf(msg.sender);
     }
 
-    // Function to burn tokens (by anyone)
-    function burn(uint256 amount) public {
-        _burn(msg.sender, amount);
+    function transferTokens(address receiver, uint256 value) external {
+        require(balanceOf(msg.sender) >= value, "You do not have enough Degen Tokens");
+        transfer(receiver, value);
     }
 
-    // Function to initiate token redemption (user specifies amount)
-    function redeemTokens(uint256 amount) public {
-        // Require the user to have enough tokens
-        require(balanceOf(msg.sender) >= amount, "Insufficient balance");
-
-        // This function doesn't directly transfer items
-        // It emits an event to signal the redemption request
-        emit RedemptionRequested(msg.sender, amount);
+    function burnTokens(uint256 value) external {
+        require(balanceOf(msg.sender) >= value, "You do not have enough Degen Tokens");
+        burn(value);
     }
 
-    // Event to signal a redemption request
-    event RedemptionRequested(address user, uint256 amount);
+    function redeemTokens(uint256 amount) external {
+    require(balanceOf(msg.sender) >= amount, "redeemTokens: Insufficient token balance");
+    burn(amount);
+    emit TokensRedeemed(msg.sender, amount );
+}
 
-    //  transfer function 
-    function transfer(address recipient, uint256 amount) public override returns (bool) {
-    
-        return super.transfer(recipient, amount);
-    }
 }
