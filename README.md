@@ -1,100 +1,52 @@
-## ETH-AVAX-Module-4
-## DegenToken
-## DegenToken is an ERC20-compliant token built on the Ethereum blockchain. This token contract allows for minting, burning, and redeeming tokens, with the transfer functionality inherited from the OpenZeppelin ERC20 contract.
+## DegenToken Smart Contract
+This repository contains the Solidity code for the DegenToken (DGN) smart contract, a BEP-20 token with the following features:
 
-## Features
+## Standard ERC20 compliance: Implements the ERC20 standard for interoperability with other DeFi applications.
 
-## Minting: Only the owner of the contract can mint new tokens.
+Ownable: Only the contract owner can mint new tokens.
+Burnable: Token holders can burn their DGN tokens.
+Custom event: Emits a TokensRedeemed event when a user burns tokens.
+Dependencies:
 
-## Burning: Any token holder can burn their tokens.
+## OpenZeppelin Contracts:
 
-## Redemption: Token holders can initiate a token redemption process.
+@openzeppelin/contracts/token/ERC20/ERC20.sol
+@openzeppelin/contracts/access/Ownable.sol
+@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol
+Deployment:
 
-## Transfer: Standard ERC20 transfer functionality with optional custom logic.
+## Install dependencies:
 
-
-## Installing
-
-Clone the repository
-
-git clone https://github.com/yourusername/DegenToken.git
-cd DegenToken
-Install dependencies
-Make sure you have Node.js and npm installed, then run:
 npm install @openzeppelin/contracts
+Compile the contract:
+solc DegenToken.sol --bin --abi -o Compiled
+Deploy the contract to your desired blockchain network.
+Usage:
+
+## Minting:
+
+Only the contract owner can call the mint function to create new tokens.
+
+## Transferring:
+
+Use the standard ERC20 transfer function to transfer tokens between accounts.
 
 
-## Deployment
-To deploy the contract, you'll need to provide the token name, symbol, and initial supply.
+## Burning:
 
-Example deployment script using Hardhat:
+Call the burnTokens function to permanently remove tokens from circulation.
 
+## Redeeming:
 
-const { ethers } = require("hardhat");
+Call the redeemTokens function to burn tokens and trigger the TokensRedeemed event. This could be used for a specific token utility within your application.
 
-async function main() {
-    const [deployer] = await ethers.getSigners();
+## Balance:
 
-    console.log("Deploying contracts with the account:", deployer.address);
-
-    const DegenToken = await ethers.getContractFactory("DegenToken");
-    const token = await DegenToken.deploy("Degen Token", "DGN", 1000000);
-
-    console.log("DegenToken deployed to:", token.address);
-}
-
-main()
-    .then(() => process.exit(0))
-    .catch((error) => {
-        console.error(error);
-        process.exit(1);
-    });
-
-## Contract Details
-
-Constructor
-The constructor initializes the token with a name, symbol, and initial supply, and sets the deployer as the owner.
-
-constructor(
-    string memory tokenName,
-    string memory tokenSymbol,
-    uint256 initialSupply
-) ERC20(tokenName, tokenSymbol) {
-    _mint(msg.sender, initialSupply * 10**decimals()); // Mint initial supply with decimals
-    owner = msg.sender;
-}
-
-## Minting
-
-Only the owner can mint new tokens.
-
-function mint(address recipient, uint256 amount) public onlyOwner {
-    _mint(recipient, amount);
-}
+Use the getBalance function to retrieve the current balance of the calling address
 
 
-## Burning
-Any token holder can burn their tokens.
+## Additional Notes:
 
+The decimals function is overridden to return 0, indicating whole units for the DGN token (no decimals).
 
-function burn(uint256 amount) public {
-    _burn(msg.sender, amount);
-}
-Redeeming Tokens
-Token holders can initiate a redemption process.
-
-
-function redeemTokens(uint256 amount) public {
-    require(balanceOf(msg.sender) >= amount, "Insufficient balance");
-    emit RedemptionRequested(msg.sender, amount);
-}
-
-## Transfer
-
-The standard ERC20 transfer function with optional custom logic.
-
-
-
-function transfer(address recipient, uint256 amount) public override returns (bool) {
-    return super.transfer(recipient, amount);
-}
+The transferTokens function includes a check to ensure the sender has sufficient token balance before transferring.
